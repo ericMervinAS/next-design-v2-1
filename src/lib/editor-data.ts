@@ -45,7 +45,6 @@ export const presets: Preset[] = [
   { id: "px-5", name: "Sunlit Glow", group: "Protone proX", adj: { exposure: 25, temperature: 30, highlight: 15, vibrancy: 25 } },
 ];
 
-// Curated Unsplash travel/mountain photos (free to hotlink)
 export const photos = [
   { id: "p1", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=85", title: "Mountain ridge at dawn" },
   { id: "p2", url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=85", title: "Misty peaks" },
@@ -59,36 +58,105 @@ export const photos = [
   { id: "p10", url: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=1600&q=85", title: "Pine forest" },
 ];
 
-// Translate adjustments to CSS filter
+// Primary filter applied to the <img>. Combines all adjustments that map cleanly
+// to CSS `filter` functions so every slider produces a visible change.
 export function adjToFilter(a: Adjustments): string {
-  // exposure -100..100 -> brightness 0.5..1.5
-  const brightness = 1 + a.exposure / 200;
-  // contrast -100..100 -> 0.5..1.5
-  const contrast = 1 + a.contrast / 200;
-  // saturation -100..100 -> 0..2
-  const saturate = 1 + a.saturation / 100;
-  // tint shifts hue slightly
-  const hue = (a.tint / 100) * 30 + (a.temperature / 100) * -10;
-  return `brightness(${brightness}) contrast(${contrast}) saturate(${saturate}) hue-rotate(${hue}deg)`;
+  // Exposure -100..100 -> brightness 0.4..1.8 (wide, very visible range)
+  const exposure = 1 + (a.exposure / 100) * (a.exposure >= 0 ? 0.8 : 0.6);
+  // Whites also lifts overall brightness on the bright end
+  const whitesB = 1 + (a.whites / 100) * 0.25;
+  // Blacks crushes overall brightness slightly downward when negative
+  const blacksB = 1 + (a.blacks / 100) * -0.2;
+  const brightness = exposure * whitesB * blacksB;
+
+  // Contrast -100..100 -> 0.5..1.6, plus clarity & sharpen pile on micro-contrast
+  const contrast = (1 + a.contrast / 200) * (1 + a.clarity / 250) * (1 + a.sharpen / 300);
+
+  // Saturation 0..2.5, vibrancy nudges it further
+  const saturate = Math.max(0, 1 + a.saturation / 100) * (1 + a.vibrancy / 250);
+
+  // Temperature & tint produce real hue shifts so the image visibly warms/cools.
+  const hue = (a.temperature / 100) * 25 + (a.tint / 100) * 60;
+
+  return `brightness(${brightness.toFixed(3)}) contrast(${contrast.toFixed(3)}) saturate(${saturate.toFixed(3)}) hue-rotate(${hue.toFixed(2)}deg)`;
 }
 
-// Temperature/tint also overlay color wash
-export function adjToOverlay(a: Adjustments): { color: string; opacity: number } {
-  // Warm (positive temp) => orange wash, cool => blue wash
-  const t = a.temperature;
-  const tn = a.tint;
-  let r = 0, g = 0, b = 0;
-  if (t >= 0) { r = 255; g = 160; b = 60; } else { r = 60; g = 140; b = 255; }
-  // Tint adds magenta (+) or green (-)
-  if (tn >= 0) { r = Math.round((r + 220) / 2); b = Math.round((b + 180) / 2); }
-  else { g = Math.round((g + 220) / 2); }
-  const opacity = (Math.abs(t) + Math.abs(tn)) / 600; // subtle
-  return { color: `rgb(${r}, ${g}, ${b})`, opacity };
-}
-
-// Clarity / shadow / highlight approximated with extra contrast layer
+// Secondary filter on wrapper — a sharpen "edge" via drop-shadow stack.
 export function adjToSecondaryFilter(a: Adjustments): string {
-  const clarity = 1 + a.clarity / 300;
-  const sat2 = 1 + a.vibrancy / 200;
-  return `contrast(${clarity}) saturate(${sat2})`;
+  const parts: string[] = [];
+  if (a.sharpen !== 0) {
+    const o = Math.min(1, Math.abs(a.sharpen) / 100);
+    parts.push(`drop-shadow(0 0 0.4px rgba(0,0,0,${o.toFixed(3)}))`);
+    parts.push(`drop-shadow(0 0 0.4px rgba(255,255,255,${(o * 0.5).toFixed(3)}))`);
+  }
+  if (a.clarity !== 0) {
+    const o = Math.min(1, Math.abs(a.clarity) / 120);
+    parts.push(`contrast(${(1 + a.clarity / 300).toFixed(3)})`);
+    parts.push(`drop-shadow(0 0 1px rgba(0,0,0,${(o * 0.4).toFixed(3)}))`);
+  }
+  return parts.join(" ") || "none";
+}
+
+// Layered overlays for shadow / highlight / blacks / whites / temperature / tint.
+// Each layer paints over the image with a blend mode for a tonal/wash effect.
+export type OverlayLayer = {
+  color: string;
+  opacity: number;
+  blend: "multiply" | "screen" | "overlay" | "soft-light" | "color";
+};
+
+export function adjToOverlayLayers(a: Adjustments): OverlayLayer[] {
+  const layers: OverlayLayer[] = [];
+
+  // Shadow: positive lifts shadows (screen white), negative crushes (multiply black)
+  if (a.shadow > 0) {
+    layers.push({ color: "rgb(120,120,140)", opacity: (a.shadow / 100) * 0.35, blend: "screen" });
+  } else if (a.shadow < 0) {
+    layers.push({ color: "rgb(20,20,30)", opacity: (-a.shadow / 100) * 0.45, blend: "multiply" });
+  }
+
+  // Highlight: positive boosts highlights (screen), negative tames them (multiply)
+  if (a.highlight > 0) {
+    layers.push({ color: "rgb(255,250,235)", opacity: (a.highlight / 100) * 0.3, blend: "screen" });
+  } else if (a.highlight < 0) {
+    layers.push({ color: "rgb(180,170,150)", opacity: (-a.highlight / 100) * 0.4, blend: "multiply" });
+  }
+
+  // Whites: lift bright end with overlay white
+  if (a.whites !== 0) {
+    layers.push({
+      color: a.whites > 0 ? "rgb(255,255,255)" : "rgb(40,40,40)",
+      opacity: (Math.abs(a.whites) / 100) * 0.25,
+      blend: "overlay",
+    });
+  }
+
+  // Blacks: deepen or lift the black point with soft-light black/white
+  if (a.blacks !== 0) {
+    layers.push({
+      color: a.blacks > 0 ? "rgb(255,255,255)" : "rgb(0,0,0)",
+      opacity: (Math.abs(a.blacks) / 100) * 0.35,
+      blend: "soft-light",
+    });
+  }
+
+  // Temperature wash: warm orange or cool blue
+  if (a.temperature !== 0) {
+    layers.push({
+      color: a.temperature > 0 ? "rgb(255,150,40)" : "rgb(40,120,255)",
+      opacity: (Math.abs(a.temperature) / 100) * 0.3,
+      blend: "soft-light",
+    });
+  }
+
+  // Tint wash: magenta or green
+  if (a.tint !== 0) {
+    layers.push({
+      color: a.tint > 0 ? "rgb(220,60,180)" : "rgb(60,200,120)",
+      opacity: (Math.abs(a.tint) / 100) * 0.25,
+      blend: "soft-light",
+    });
+  }
+
+  return layers;
 }
