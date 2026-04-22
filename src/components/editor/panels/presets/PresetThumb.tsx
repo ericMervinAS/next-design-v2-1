@@ -5,25 +5,36 @@ export function PresetThumb({
   photoUrl,
   active,
   onClick,
+  onHover,
+  onLeave,
 }: {
   preset: Preset;
   photoUrl: string;
   active?: boolean;
   onClick: () => void;
+  onHover?: () => void;
+  onLeave?: () => void;
 }) {
   const adj = { ...defaultAdjustments, ...preset.adj };
   return (
     <button
       onClick={onClick}
-      className={`relative w-full overflow-hidden rounded-md border transition-all ${
-        active ? "border-primary ring-2 ring-primary/40" : "border-transparent hover:border-border"
-      }`}
-      style={{ aspectRatio: "16/7" }}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      onFocus={onHover}
+      onBlur={onLeave}
+      className="group relative block h-[80px] w-full shrink-0 overflow-hidden"
+      style={{
+        border: active
+          ? "2px solid #3b82f6"
+          : "0.535px solid rgba(226, 226, 226, 0.2)",
+        boxShadow: active ? "0px 4px 4px rgba(0, 0, 0, 0.25)" : undefined,
+      }}
     >
       <img
         src={photoUrl}
         alt={preset.name}
-        className="h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover"
         style={{ filter: adjToFilter(adj) }}
         loading="lazy"
       />
@@ -34,11 +45,25 @@ export function PresetThumb({
           style={{ backgroundColor: layer.color, opacity: layer.opacity, mixBlendMode: layer.blend }}
         />
       ))}
-      {active && (
-        <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1 text-left text-[11px] font-medium text-white">
-          {preset.name}
-        </span>
-      )}
+      {/* Darken overlay — always on for active, fades in on hover otherwise */}
+      <div
+        className={
+          "pointer-events-none absolute inset-0 transition-opacity duration-150 " +
+          (active
+            ? "bg-black/60 opacity-100"
+            : "bg-black/50 opacity-0 group-hover:opacity-100")
+        }
+      />
+      {/* Preset name — shown when active or on hover */}
+      <span
+        className={
+          "pointer-events-none absolute inset-0 flex items-center justify-center text-[13px] leading-4 text-[#e2e2e2] transition-opacity duration-150 " +
+          (active ? "opacity-100" : "opacity-0 group-hover:opacity-100")
+        }
+        style={{ fontFamily: "'Google Sans Flex', 'Google Sans', sans-serif" }}
+      >
+        {preset.name}
+      </span>
     </button>
   );
 }

@@ -43,6 +43,19 @@ export const Route = createRootRoute({
         rel: "stylesheet",
         href: appCss,
       },
+      // Preconnect for faster font delivery
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      // Google Sans Flex (falls back to system sans if unavailable)
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,300..700&display=swap",
+      },
+      // Material Icons (classic) — includes star_border, etc.
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/icon?family=Material+Icons",
+      },
     ],
   }),
   shellComponent: RootShell,

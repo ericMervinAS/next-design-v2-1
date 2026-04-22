@@ -38,6 +38,19 @@ export const presets: Preset[] = [
   { id: "ai-5", name: "Soft Pastel", group: "Top AI pics", adj: { exposure: 10, contrast: -15, saturation: -10, highlight: -20 } },
   { id: "ai-6", name: "Mountain Pop", group: "Top AI pics", adj: { clarity: 60, contrast: 30, shadow: 25, vibrancy: 40 } },
   { id: "ai-7", name: "Faded Film", group: "Top AI pics", adj: { contrast: -25, blacks: 20, saturation: -15, temperature: 10 } },
+
+  { id: "sp-1", name: "Fresh Bloom", group: "Spring one", adj: { exposure: 12, vibrancy: 35, saturation: 15, temperature: 10 } },
+  { id: "sp-2", name: "Pastel Morning", group: "Spring one", adj: { exposure: 18, contrast: -10, saturation: -5, highlight: -15, tint: 8 } },
+  { id: "sp-3", name: "Soft Meadow", group: "Spring one", adj: { clarity: -15, vibrancy: 25, shadow: 12, temperature: 15 } },
+
+  { id: "rf-1", name: "Deep Canopy", group: "Rain forest", adj: { saturation: 20, vibrancy: 30, shadow: 25, temperature: -15, tint: 10 } },
+  { id: "rf-2", name: "Moss Glow", group: "Rain forest", adj: { exposure: -8, contrast: 20, saturation: 15, highlight: -25, temperature: -10 } },
+  { id: "rf-3", name: "Wet Leaf", group: "Rain forest", adj: { clarity: 30, vibrancy: 40, contrast: 15, tint: 5 } },
+
+  { id: "tl-1", name: "Tokyo M4", group: "Tokyo lands", adj: { exposure: 100, contrast: -5, shadow: -24, highlight: -24, whites: -12, clarity: 100, saturation: 45, tint: -28, temperature: 54 } },
+  { id: "tl-2", name: "Neon Alley", group: "Tokyo lands", adj: { contrast: 30, saturation: 25, shadow: -20, vibrancy: 35, temperature: -20 } },
+  { id: "tl-3", name: "Subway Blue", group: "Tokyo lands", adj: { temperature: -35, saturation: 10, contrast: 20, blacks: -15 } },
+
   { id: "px-1", name: "Cinematic", group: "Protone proX", adj: { contrast: 35, shadow: -30, highlight: -20, saturation: -8, temperature: -10 } },
   { id: "px-2", name: "Warm Sunset", group: "Protone proX", adj: { temperature: 60, tint: 20, saturation: 30, exposure: 15 } },
   { id: "px-3", name: "Cool Mist", group: "Protone proX", adj: { temperature: -40, clarity: -10, highlight: 20, saturation: -5 } },

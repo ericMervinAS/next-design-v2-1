@@ -1,47 +1,112 @@
-import { ChevronLeft, Info, Filter, SlidersHorizontal, Star, Flag, Columns2 } from "lucide-react";
+import { MIcon } from "../shared/MIcon";
 
-export function TopBar({ title, rating = 2 }: { title: string; rating?: number }) {
+/**
+ * Floating TopBar — sits on top of the canvas. Each control is its own
+ * pill in `#1c1c1c`, separated with small gaps. No full-width bar background.
+ * Matches Figma node 335:103413.
+ */
+export function TopBar({
+  title,
+  rating = 2,
+  zoom = 1,
+}: {
+  title: string;
+  rating?: number;
+  /** Current canvas zoom. `1` = 100%. */
+  zoom?: number;
+}) {
+  const pillBg = "#1c1c1c";
+  const textColor = "#ababab";
+  const fontFamily = "'Google Sans Flex', 'Google Sans', sans-serif";
+
   return (
-    <div className="flex h-12 items-center gap-3 border-b border-border bg-panel px-3 select-none">
-      <div className="flex items-center gap-2">
-        <span className="traffic-light" style={{ background: "#ff5f57" }} />
-        <span className="traffic-light" style={{ background: "#febc2e" }} />
-        <span className="traffic-light" style={{ background: "#28c840" }} />
-      </div>
-
-      <button className="ml-2 rounded p-1.5 text-muted-foreground hover:bg-panel-2 hover:text-foreground">
-        <ChevronLeft className="h-4 w-4" />
+    <div
+      className="pointer-events-none flex w-full items-center gap-3 pl-3 pr-3 pt-2 select-none"
+      style={{ fontFamily }}
+    >
+      {/* Back button — circular pill */}
+      <button
+        className="pointer-events-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#e2e2e2] hover:opacity-90"
+        style={{ backgroundColor: pillBg }}
+        title="Back"
+      >
+        <MIcon name="chevron_left" size={16} />
       </button>
 
-      <div className="flex items-center gap-2 rounded-md bg-panel-2 px-3 py-1.5">
-        <Info className="h-3.5 w-3.5 text-muted-foreground" />
-        <span className="text-[13px] text-foreground/90">{title}</span>
-        <div className="ml-2 flex items-center gap-0.5">
+      {/* Title pill — info icon + title + star rating + flag */}
+      <div
+        className="pointer-events-auto flex h-[34px] shrink-0 items-center gap-2 rounded-full px-2"
+        style={{ backgroundColor: pillBg }}
+      >
+        <MIcon name="info" size={16} style={{ color: textColor }} />
+        <span
+          className="text-[13px] leading-4"
+          style={{ color: textColor }}
+        >
+          {title}
+        </span>
+        <div className="flex items-center">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Star
+            <MIcon
               key={i}
-              className={`h-3 w-3 ${i < rating ? "fill-foreground text-foreground" : "text-muted-foreground"}`}
+              name={i < rating ? "star" : "star_border"}
+              size={16}
+              style={{ color: textColor }}
             />
           ))}
         </div>
-        <Flag className="ml-1 h-3 w-3 text-muted-foreground" />
+        <MIcon name="flag" size={16} style={{ color: textColor }} />
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
-        <button className="rounded p-1.5 text-muted-foreground hover:bg-panel-2 hover:text-foreground">
-          <Filter className="h-4 w-4" />
+      {/* Flex spacer pushes the right cluster to the far right */}
+      <div className="flex-1" />
+
+      {/* Right cluster — filter, filter_list, zoom, compare */}
+      <div className="pointer-events-auto flex shrink-0 items-center gap-1.5">
+        <button
+          className="flex h-9 w-9 items-center justify-center rounded-full text-[#e2e2e2] hover:opacity-90"
+          style={{ backgroundColor: pillBg }}
+          title="Filter"
+        >
+          <MIcon name="filter_alt" size={20} />
         </button>
-        <button className="rounded p-1.5 text-muted-foreground hover:bg-panel-2 hover:text-foreground">
-          <SlidersHorizontal className="h-4 w-4" />
+        <button
+          className="flex h-9 w-9 items-center justify-center rounded-full text-[#e2e2e2] hover:opacity-90"
+          style={{ backgroundColor: pillBg }}
+          title="Sort"
+        >
+          <MIcon name="filter_list" size={20} />
         </button>
-        <div className="mx-1 flex items-center gap-1 rounded-md bg-panel-2 px-2 py-1 text-[12px] text-foreground/90">
-          <span>Fit</span>
+
+        {/* Zoom pill: "Fit" | "100% ▲" */}
+        <div
+          className="flex h-9 items-center gap-3 rounded-full px-3"
+          style={{ backgroundColor: pillBg }}
+        >
+          <span className="text-[13px] leading-4" style={{ color: textColor }}>
+            Fit
+          </span>
+          <span
+            className="block h-[18px] w-px"
+            style={{ backgroundColor: "rgba(226, 226, 226, 0.2)" }}
+          />
+          <div className="flex items-center gap-1">
+            <span
+              className="tabular-nums text-[13px] leading-4"
+              style={{ color: textColor }}
+            >
+              {Math.round(zoom * 100)}%
+            </span>
+            <MIcon name="arrow_drop_up" size={16} style={{ color: textColor }} />
+          </div>
         </div>
-        <div className="flex items-center gap-1 rounded-md bg-panel-2 px-2 py-1 text-[12px] text-foreground/90">
-          <span>100%</span>
-        </div>
-        <button className="rounded p-1.5 text-muted-foreground hover:bg-panel-2 hover:text-foreground">
-          <Columns2 className="h-4 w-4" />
+
+        <button
+          className="flex h-9 w-9 items-center justify-center rounded-full text-[#e2e2e2] hover:opacity-90"
+          style={{ backgroundColor: pillBg }}
+          title="Compare"
+        >
+          <MIcon name="compare" size={16} />
         </button>
       </div>
     </div>
