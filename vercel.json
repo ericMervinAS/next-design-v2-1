@@ -1,3 +1,7 @@
 {
-  "buildCommand": "node build-vercel.mjs"
+  "buildCommand": "vite build",
+  "outputDirectory": "dist/client",
+  "rewrites": [
+    { "source": "/((?!assets/).*)", "destination": "/api/index" }
+  ]
 }
